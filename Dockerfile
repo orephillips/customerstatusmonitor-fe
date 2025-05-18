@@ -6,9 +6,11 @@ WORKDIR /app
 # Copy package.json and yarn.lock
 COPY package.json yarn.lock ./
 
-# Install dependencies with network retries
-RUN yarn config set network-timeout 300000 && \
-    yarn install --network-timeout 300000 --frozen-lockfile
+# Check Node version and install dependencies with network retries
+RUN node -v && \
+    yarn config set network-timeout 300000 && \
+    yarn config set ignore-engines true && \
+    yarn install --network-timeout 300000 --ignore-engines
 
 # Copy all files
 COPY . .
