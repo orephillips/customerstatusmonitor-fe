@@ -3,9 +3,7 @@ import DashboardView from '../views/DashboardView.vue'
 import SnapshotManagementView from '../views/SnapshotManagementView.vue'
 import PortfolioTrackerView from '../views/PortfolioTrackerView.vue'
 import LoginView from '../views/LoginView.vue'
-/* eslint-disable no-unused-vars */
-import authService from '../services/auth'
-/* eslint-enable no-unused-vars */
+import { auth } from '../firebase'
 
 const routes = [
   {
@@ -47,29 +45,32 @@ const router = createRouter({
   routes
 })
 
-// Bypass authentication for testing purposes
+// Authentication guard
 router.beforeEach((to, from, next) => {
-  // Always allow access regardless of authentication status
-  next()
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const currentUser = auth.currentUser;
   
-  // Original authentication logic (commented out for testing)
-  /*
-  if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!authService.isAuthenticated()) {
-      next({ name: 'login' })
-    } else if (!authService.isAllowedDomain()) {
-      authService.logout()
-      next({ 
-        name: 'login',
-        query: { error: 'domain_restricted' }
-      })
+  if (requiresAuth && !currentUser) {
+    // Redirect to login if authentication is required but user is not logged in
+    next({ name: 'login' });
+  } else if (requiresAuth && currentUser) {
+    // Check if user is from allowed domain
+    if (currentUser.email && currentUser.email.endsWith('@bitwave.io')) {
+      // Allow access if from allowed domain
+      next();
     } else {
-      next()
+      // Logout and redirect to login if not from allowed domain
+      auth.signOut().then(() => {
+        next({ 
+          name: 'login',
+          query: { error: 'domain_restricted' }
+        });
+      });
     }
   } else {
-    next()
+    // Allow access to non-protected routes
+    next();
   }
-  */
 });
 
 export default router

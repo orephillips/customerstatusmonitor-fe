@@ -9,7 +9,7 @@
       </div>
       
       <div class="login-button-container">
-        <button @click="login" class="google-login-button">
+        <button @click="signInWithGoogle" class="google-login-button" :disabled="loading">
           <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google Logo" class="google-icon">
           Sign in with Google
         </button>
@@ -27,54 +27,57 @@
 </template>
 
 <script>
-import authService from '@/services/auth';
+import { ref } from 'vue';
+import { auth } from '@/firebase';
+import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 
 export default {
   name: 'LoginView',
-  data() {
-    return {
-      error: null
-    };
-  },
-  created() {
-    // Check if we're handling a callback from Google
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
+  setup() {
+    const error = ref(null);
+    const loading = ref(false);
     
-    if (code) {
-      this.handleCallback(code);
-    } else if (authService.isAuthenticated()) {
-      // If already authenticated, redirect to dashboard
-      if (authService.isAllowedDomain()) {
-        this.$router.push('/dashboard');
-      } else {
-        // If not from allowed domain, force logout
-        authService.logout();
-        this.error = 'Access denied. Only @bitwave.io email addresses are allowed.';
-      }
+    // Check if user is already authenticated
+    if (auth.currentUser) {
+      checkUserDomain(auth.currentUser);
     }
-  },
-  methods: {
-    login() {
-      authService.login();
-    },
-    async handleCallback(code) {
-      try {
-        await authService.handleCallback(code);
-        
-        // Check if user is from allowed domain
-        if (authService.isAllowedDomain()) {
-          this.$router.push('/dashboard');
+    
+    // Function to check if user's email is from allowed domain
+    const checkUserDomain = async (user) => {
+      if (user && user.email) {
+        if (user.email.endsWith('@bitwave.io')) {
+          // Redirect to dashboard if from allowed domain
+          window.location.href = '/';
         } else {
-          // If not from allowed domain, force logout
-          authService.logout();
-          this.error = 'Access denied. Only @bitwave.io email addresses are allowed.';
+          // Logout if not from allowed domain
+          error.value = 'Access denied. Only @bitwave.io email addresses are allowed.';
+          await signOut(auth);
         }
-      } catch (error) {
-        console.error('Error handling callback:', error);
-        this.error = 'Authentication failed. Please try again.';
       }
-    }
+    };
+    
+    // Sign in with Google
+    const signInWithGoogle = async () => {
+      loading.value = true;
+      error.value = null;
+      
+      try {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        await checkUserDomain(result.user);
+      } catch (err) {
+        console.error('Authentication error:', err);
+        error.value = 'Authentication failed. Please try again.';
+      } finally {
+        loading.value = false;
+      }
+    };
+    
+    return {
+      error,
+      loading,
+      signInWithGoogle
+    };
   }
 };
 </script>
