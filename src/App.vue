@@ -56,27 +56,43 @@ export default {
     
     const isAuthenticated = computed(() => user.value !== null)
     
+    // Force redirect to login if not authenticated and trying to access protected route
+    const checkAuthAndRedirect = (currentUser) => {
+      const currentRoute = router.currentRoute.value
+      
+      // If on a protected route but not authenticated, redirect to login
+      if (!currentUser && currentRoute.meta.requiresAuth) {
+        console.log('Not authenticated, redirecting to login')
+        router.push('/login')
+        return
+      }
+      
+      // If authenticated but not from allowed domain, log out
+      if (currentUser && currentUser.email && !currentUser.email.endsWith('@bitwave.io')) {
+        console.log('Not from allowed domain, logging out')
+        signOut(auth).then(() => {
+          router.push({
+            name: 'login',
+            query: { error: 'domain_restricted' }
+          })
+        })
+      }
+    }
+    
     onMounted(() => {
+      console.log('App mounted, setting up auth listener')
+      
       // Set up authentication state listener
-      onAuthStateChanged(auth, (currentUser) => {
+      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        console.log('Auth state changed:', currentUser ? `User: ${currentUser.email}` : 'No user')
         user.value = currentUser
         loading.value = false
         
-        // If on a protected route but not authenticated, redirect to login
-        if (!currentUser && router.currentRoute.value.meta.requiresAuth) {
-          router.push('/login')
-        }
-        
-        // If authenticated but not from allowed domain, log out
-        if (currentUser && currentUser.email && !currentUser.email.endsWith('@bitwave.io')) {
-          signOut(auth).then(() => {
-            router.push({
-              name: 'login',
-              query: { error: 'domain_restricted' }
-            })
-          })
-        }
+        checkAuthAndRedirect(currentUser)
       })
+      
+      // Clean up the listener when component unmounts
+      return () => unsubscribe()
     })
     
     const logout = async () => {

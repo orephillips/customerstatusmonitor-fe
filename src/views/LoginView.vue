@@ -27,29 +27,48 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { auth } from '@/firebase';
-import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 
 export default {
   name: 'LoginView',
   setup() {
     const error = ref(null);
     const loading = ref(false);
+    const router = useRouter();
     
-    // Check if user is already authenticated
-    if (auth.currentUser) {
-      checkUserDomain(auth.currentUser);
-    }
+    // Check for error in URL query params
+    onMounted(() => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('error') === 'domain_restricted') {
+        error.value = 'Access denied. Only @bitwave.io email addresses are allowed.';
+      }
+      
+      // Check if user is already authenticated
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        console.log('Login page: auth state changed', user ? `User: ${user.email}` : 'No user');
+        if (user) {
+          checkUserDomain(user);
+        }
+      });
+      
+      // Clean up the listener when component unmounts
+      return () => unsubscribe();
+    });
     
     // Function to check if user's email is from allowed domain
     const checkUserDomain = async (user) => {
       if (user && user.email) {
+        console.log('Checking user domain for:', user.email);
         if (user.email.endsWith('@bitwave.io')) {
           // Redirect to dashboard if from allowed domain
-          window.location.href = '/';
+          console.log('User from allowed domain, redirecting to dashboard');
+          router.push('/dashboard');
         } else {
           // Logout if not from allowed domain
+          console.log('User not from allowed domain, logging out');
           error.value = 'Access denied. Only @bitwave.io email addresses are allowed.';
           await signOut(auth);
         }
@@ -62,12 +81,18 @@ export default {
       error.value = null;
       
       try {
+        console.log('Attempting Google sign-in');
         const provider = new GoogleAuthProvider();
+        // Add scopes if needed
+        provider.addScope('profile');
+        provider.addScope('email');
+        
         const result = await signInWithPopup(auth, provider);
+        console.log('Sign-in successful:', result.user.email);
         await checkUserDomain(result.user);
       } catch (err) {
         console.error('Authentication error:', err);
-        error.value = 'Authentication failed. Please try again.';
+        error.value = 'Authentication failed: ' + (err.message || 'Please try again.');
       } finally {
         loading.value = false;
       }

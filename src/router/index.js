@@ -46,30 +46,53 @@ const router = createRouter({
 })
 
 // Authentication guard
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
+  console.log('Router guard: checking route', to.path);
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const currentUser = auth.currentUser;
+  
+  // Wait for Firebase Auth to initialize
+  const waitForAuthInit = () => {
+    return new Promise((resolve) => {
+      const unsubscribe = auth.onAuthStateChanged(user => {
+        unsubscribe();
+        resolve(user);
+      });
+    });
+  };
+  
+  // Get current user, waiting for auth to initialize if necessary
+  const currentUser = auth.currentUser || await waitForAuthInit();
+  console.log('Router guard: current user', currentUser ? currentUser.email : 'none');
+  
+  // Handle test mode - remove this in production
+  if (to.query.test === 'true') {
+    console.log('Test mode enabled, bypassing authentication');
+    return next();
+  }
   
   if (requiresAuth && !currentUser) {
     // Redirect to login if authentication is required but user is not logged in
-    next({ name: 'login' });
+    console.log('Router guard: redirecting to login (not authenticated)');
+    return next({ name: 'login' });
   } else if (requiresAuth && currentUser) {
     // Check if user is from allowed domain
     if (currentUser.email && currentUser.email.endsWith('@bitwave.io')) {
       // Allow access if from allowed domain
-      next();
+      console.log('Router guard: allowing access (authenticated with allowed domain)');
+      return next();
     } else {
       // Logout and redirect to login if not from allowed domain
-      auth.signOut().then(() => {
-        next({ 
-          name: 'login',
-          query: { error: 'domain_restricted' }
-        });
+      console.log('Router guard: logging out (not from allowed domain)');
+      await auth.signOut();
+      return next({ 
+        name: 'login',
+        query: { error: 'domain_restricted' }
       });
     }
   } else {
     // Allow access to non-protected routes
-    next();
+    console.log('Router guard: allowing access (non-protected route)');
+    return next();
   }
 });
 
