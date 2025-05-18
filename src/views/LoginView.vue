@@ -4,14 +4,10 @@
       <h1>Status Monitor</h1>
       <p class="subtitle">Sign in with your Bitwave Google account</p>
       
-      <div class="logo-container">
-        <img src="@/assets/logo.png" alt="Status Monitor Logo" class="logo">
-      </div>
-      
       <div class="login-button-container">
         <button @click="signInWithGoogle" class="google-login-button" :disabled="loading">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google Logo" class="google-icon">
-          Sign in with Google
+          <span v-if="loading">Signing in...</span>
+          <span v-else>Sign in with Google</span>
         </button>
       </div>
       
@@ -135,14 +131,6 @@ h1 {
   margin-bottom: 30px;
 }
 
-.logo-container {
-  margin-bottom: 30px;
-}
-
-.logo {
-  max-width: 120px;
-}
-
 .google-login-button {
   display: flex;
   align-items: center;
@@ -156,19 +144,16 @@ h1 {
   cursor: pointer;
   width: 100%;
   transition: background-color 0.3s;
+  margin-top: 30px;
 }
 
 .google-login-button:hover {
   background-color: #3367D6;
 }
 
-.google-icon {
-  width: 20px;
-  height: 20px;
-  margin-right: 10px;
-  background-color: white;
-  padding: 2px;
-  border-radius: 2px;
+.google-login-button:disabled {
+  background-color: #9e9e9e;
+  cursor: not-allowed;
 }
 
 .error-message {
