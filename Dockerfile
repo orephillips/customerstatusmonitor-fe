@@ -1,13 +1,14 @@
 # Build stage
-FROM node:16-alpine as build-stage
+FROM node:16.20-alpine as build-stage
 
 WORKDIR /app
 
 # Copy package.json and yarn.lock
 COPY package.json yarn.lock ./
 
-# Install dependencies
-RUN yarn install
+# Install dependencies with network retries
+RUN yarn config set network-timeout 300000 && \
+    yarn install --network-timeout 300000 --frozen-lockfile
 
 # Copy all files
 COPY . .
