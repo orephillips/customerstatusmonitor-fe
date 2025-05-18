@@ -17,7 +17,7 @@
           <label for="cso-select">CSO:</label>
           <input id="cso-select" type="text" v-model="selectedCso" class="form-select" placeholder="Filter by CSO" list="cso-options">
           <datalist id="cso-options">
-            <option v-for="cso in csos" :key="cso" :value="cso"></option>
+            <option v-for="cso in csos" :key="cso.id" :value="cso.name">{{ cso.name }}</option>
           </datalist>
         </div>
         <div class="filter-item checkbox-filter">
