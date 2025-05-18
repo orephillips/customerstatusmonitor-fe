@@ -24,19 +24,12 @@ COPY --from=build-stage /app/dist /usr/share/nginx/html
 # Copy custom nginx config for SPA routing
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Create a script to dynamically update nginx configuration based on PORT env variable
-RUN echo '#!/bin/sh \
-\
-# Dynamically replace the port in the nginx config \
-if [ -n "$PORT" ]; then \
-  sed -i "s/listen 80/listen $PORT/g" /etc/nginx/conf.d/default.conf; \
-fi \
-\
-# Start nginx \
-exec nginx -g "daemon off;"' > /docker-entrypoint.sh \
-    && chmod +x /docker-entrypoint.sh
+# Copy entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Expose port (Cloud Run will override this with PORT env variable)
-EXPOSE 80
+EXPOSE 8080
 
-CMD ["/docker-entrypoint.sh"]
+# Use the entrypoint script
+CMD ["/entrypoint.sh"]
