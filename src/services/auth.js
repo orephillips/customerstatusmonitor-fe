@@ -1,8 +1,70 @@
 import axios from 'axios';
+import { auth } from '@/firebase';
 
 const API_URL = 'http://localhost:8001';
 
 class AuthService {
+  constructor() {
+    this.initializeAxiosInterceptors();
+    this.initializeFromLocalStorage();
+    
+    // Listen for Firebase auth state changes
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        try {
+          // Get the Firebase ID token
+          const idToken = await user.getIdToken();
+          this.setToken(idToken);
+        } catch (error) {
+          console.error('Error getting Firebase ID token:', error);
+        }
+      }
+    });
+  }
+
+  initializeFromLocalStorage() {
+    // Initialize axios with the token from localStorage if it exists
+    const token = this.getToken();
+    if (token) {
+      this.setTokenInAxios(token);
+    }
+  }
+
+  initializeAxiosInterceptors() {
+    // Request interceptor - add auth token to all requests
+    axios.interceptors.request.use(
+      (config) => {
+        const token = this.getToken();
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    // Response interceptor - handle auth errors
+    axios.interceptors.response.use(
+      (response) => {
+        return response;
+      },
+      (error) => {
+        if (error.response) {
+          // Handle authentication errors
+          if (error.response.status === 401 || error.response.status === 403) {
+            console.error('Authentication error:', error.response.data);
+            // Optionally redirect to login or show an auth error message
+            // this.logout();
+            // window.location.href = '/login';
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+  }
+
   async login() {
     window.location.href = `${API_URL}/auth/login`;
   }
@@ -24,6 +86,11 @@ class AuthService {
 
   setToken(token) {
     localStorage.setItem('auth_token', token);
+    this.setTokenInAxios(token);
+  }
+
+  setTokenInAxios(token) {
+    // Set the default Authorization header for all axios requests
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   }
 
@@ -41,14 +108,19 @@ class AuthService {
   }
 
   isAuthenticated() {
-    // Always return true for testing
-    return true;
+    // Check if we have a token
+    return !!this.getToken();
   }
 
   logout() {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_info');
     delete axios.defaults.headers.common['Authorization'];
+    
+    // Sign out from Firebase if needed
+    auth.signOut().catch(error => {
+      console.error('Firebase sign out error:', error);
+    });
   }
 
   isAllowedDomain() {
