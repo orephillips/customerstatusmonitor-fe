@@ -501,11 +501,11 @@ export default {
           };
           
           console.log('Saving customer data:', customerData);
-          await axios.patch(`${API_URL}/customers/${customer.id}/`, customerData);
+          await axios.patch(`${API_URL}/customers/${customer.id}`, customerData);
           
           // Then save health status (snapshot-specific data)
           console.log('Saving health status:', customer.healthStatus);
-          await axios.patch(`${API_URL}/customers/${customer.id}/health/?snapshotId=${this.selectedSnapshotId}`, customer.healthStatus);
+          await axios.patch(`${API_URL}/customers/${customer.id}/health?snapshotId=${this.selectedSnapshotId}`, customer.healthStatus);
         });
         
         await Promise.all(promises);
@@ -542,7 +542,7 @@ export default {
     },
     async addCustomer() {
       try {
-        await axios.post(`${API_URL}/customers/`, this.newCustomer);
+        await axios.post(`${API_URL}/customers`, this.newCustomer);
         this.showAddCustomerModal = false;
         this.newCustomer = {
           name: '',
@@ -572,7 +572,7 @@ export default {
       if (!this.customerToDelete) return;
       
       try {
-        await axios.delete(`${API_URL}/customers/${this.customerToDelete.id}/`);
+        await axios.delete(`${API_URL}/customers/${this.customerToDelete.id}`);
         this.showDeleteModal = false;
         this.customerToDelete = null;
         this.fetchCustomers();
@@ -583,7 +583,7 @@ export default {
     },
     async updateHealthStatus(customer) {
       try {
-        await axios.patch(`${API_URL}/customers/${customer.id}/health/?snapshotId=${this.selectedSnapshotId}`, customer.healthStatus);
+        await axios.patch(`${API_URL}/customers/${customer.id}/health?snapshotId=${this.selectedSnapshotId}`, customer.healthStatus);
         alert('Health status updated successfully!');
       } catch (error) {
         console.error('Error updating health status:', error);
@@ -609,7 +609,7 @@ export default {
           customField4: customer.customField4
         };
         
-        await axios.patch(`${API_URL}/customers/${customer.id}/`, customerData);
+        await axios.patch(`${API_URL}/customers/${customer.id}`, customerData);
         return true;
       } catch (error) {
         console.error('Error updating customer data:', error);
@@ -625,7 +625,7 @@ export default {
       // Then save health status (snapshot-specific data)
       try {
         if (customerDataSaved) {
-          await axios.patch(`${API_URL}/customers/${customer.id}/health/?snapshotId=${this.selectedSnapshotId}`, customer.healthStatus);
+          await axios.patch(`${API_URL}/customers/${customer.id}/health?snapshotId=${this.selectedSnapshotId}`, customer.healthStatus);
           alert('Customer data and health status updated successfully!');
         }
       } catch (error) {
