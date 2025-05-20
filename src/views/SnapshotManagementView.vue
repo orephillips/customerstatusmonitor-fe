@@ -74,9 +74,7 @@
 </template>
 
 <script>
-import axios from 'axios';
-
-import { API_URL } from '@/services/api';
+import api, { API_URL } from '@/services/api';
 
 export default {
   name: 'SnapshotManagementView',
@@ -95,7 +93,7 @@ export default {
   methods: {
     async fetchSnapshots() {
       try {
-        const response = await axios.get(`${API_URL}/snapshots/`);
+        const response = await api.get('/snapshots/');
         this.snapshots = response.data;
       } catch (error) {
         console.error('Error fetching snapshots:', error);
@@ -113,12 +111,7 @@ export default {
         console.log('Creating snapshot with data:', snapshotData);
         console.log('Sending request to:', `${API_URL}/snapshots/`);
         
-        const response = await axios.post(`${API_URL}/snapshots/`, snapshotData, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        });
+        const response = await api.post('/snapshots/', snapshotData);
         
         console.log('Snapshot created successfully:', response.data);
         
@@ -152,7 +145,7 @@ export default {
       if (!confirm('Are you sure you want to delete this snapshot?')) return;
       
       try {
-        await axios.delete(`${API_URL}/snapshots/${id}/`);
+        await api.delete(`/snapshots/${id}`);
         this.fetchSnapshots();
       } catch (error) {
         console.error('Error deleting snapshot:', error);
