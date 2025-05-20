@@ -499,7 +499,18 @@ export default {
         if (this.selectedCustomerType) summaryParams.append('customerType', this.selectedCustomerType);
         
         const summaryResponse = await axios.get(`${API_URL}/dashboard/health-summary?${summaryParams.toString()}`);
-        this.healthSummary = summaryResponse.data;
+        // Transform the API response to match the expected format
+        const summaryData = summaryResponse.data;
+        const totalCount = summaryData.total.count || 0;
+        this.healthSummary = {
+          totalCustomers: totalCount,
+          healthyCount: summaryData.green.count || 0,
+          concernsCount: summaryData.yellow.count || 0,
+          criticalCount: summaryData.red.count || 0,
+          percentHealthy: totalCount > 0 ? ((summaryData.green.count || 0) / totalCount) * 100 : 0,
+          percentConcerns: totalCount > 0 ? ((summaryData.yellow.count || 0) / totalCount) * 100 : 0,
+          percentCritical: totalCount > 0 ? ((summaryData.red.count || 0) / totalCount) * 100 : 0
+        };
         
         // Fetch health metrics
         const metricsResponse = await axios.get(`${API_URL}/dashboard/health-metrics?${summaryParams.toString()}`);
