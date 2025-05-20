@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { auth } from '@/firebase';
 
-const API_URL = 'http://localhost:8001';
+// Import API_URL and setAuthToken from api.js to ensure consistency
+import { API_URL, setAuthToken } from './api';
 
 class AuthService {
   constructor() {
@@ -92,6 +93,8 @@ class AuthService {
   setTokenInAxios(token) {
     // Set the default Authorization header for all axios requests
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    // Also update the token in our api instance
+    setAuthToken(token);
   }
 
   setUserInfo(userInfo) {

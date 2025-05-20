@@ -1,8 +1,10 @@
 import axios from 'axios';
-import authService from './auth.js';
 
-// Base API URL
-const API_URL = 'http://localhost:8001';
+// Base API URL - use environment variable if available, otherwise fallback to production URL
+export const API_URL = process.env.VUE_APP_API_URL || 'https://customermonitor-backend-455488113475.us-central1.run.app';
+
+// Log which API URL we're using
+console.log(`Using API URL: ${API_URL}`);
 
 // Create a configured axios instance
 const api = axios.create({
@@ -13,11 +15,15 @@ const api = axios.create({
   }
 });
 
-// Initialize with token if it exists
-const token = authService.getToken();
-if (token) {
-  api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-}
+// Token initialization will be handled by auth.js
+// We'll set up a method to update the authorization header
+export const setAuthToken = (token) => {
+  if (token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common['Authorization'];
+  }
+};
 
 // Export methods for common API operations
 export default {
