@@ -412,7 +412,7 @@ export default {
   methods: {
     async fetchSnapshots() {
       try {
-        const response = await axios.get(`${API_URL}/snapshots`);
+        const response = await axios.get(`${API_URL}/snapshots/`);
         this.snapshots = response.data;
         if (this.snapshots.length > 0) {
           this.selectedSnapshotId = this.snapshots[0].id;
