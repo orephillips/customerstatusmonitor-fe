@@ -373,7 +373,7 @@ import HealthSummary from '@/components/HealthSummary.vue';
 import DashboardTable from '@/components/DashboardTable.vue';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8001';
+import { API_URL } from '@/services/api';
 
 export default {
   name: 'DashboardView',
