@@ -356,7 +356,9 @@
 </template>
 
 <script>
-import api from '@/services/api';
+import axios from 'axios';
+
+import { API_URL } from '@/services/api';
 
 export default {
   name: 'PortfolioTrackerView',
@@ -410,7 +412,7 @@ export default {
   methods: {
     async fetchSnapshots() {
       try {
-        const response = await api.get('/snapshots');
+        const response = await axios.get(`${API_URL}/snapshots`);
         this.snapshots = response.data;
         if (this.snapshots.length > 0) {
           this.selectedSnapshotId = this.snapshots[0].id;
@@ -422,7 +424,7 @@ export default {
     },
     async fetchCsos() {
       try {
-        const response = await api.get('/dashboard/csos');
+        const response = await axios.get(`${API_URL}/dashboard/csos`);
         this.csos = response.data;
       } catch (error) {
         console.error('Error fetching CSOs:', error);
@@ -430,7 +432,7 @@ export default {
     },
     async fetchCustomerTypes() {
       try {
-        const response = await api.get('/dashboard/customer-types');
+        const response = await axios.get(`${API_URL}/dashboard/customer-types`);
         this.customerTypes = response.data;
       } catch (error) {
         console.error('Error fetching customer types:', error);
@@ -444,7 +446,7 @@ export default {
         params.append('snapshotId', this.selectedSnapshotId);
         if (this.selectedCso) params.append('cso', this.selectedCso);
         
-        const response = await api.get(`/customers?${params.toString()}`);
+        const response = await axios.get(`${API_URL}/customers?${params.toString()}`);
         this.customers = response.data;
         this.selectedCustomers = [];
         this.selectAll = false;
@@ -499,11 +501,11 @@ export default {
           };
           
           console.log('Saving customer data:', customerData);
-          await api.patch(`/customers/${customer.id}`, customerData);
+          await axios.patch(`${API_URL}/customers/${customer.id}`, customerData);
           
           // Then save health status (snapshot-specific data)
           console.log('Saving health status:', customer.healthStatus);
-          await api.patch(`/customers/${customer.id}/health?snapshotId=${this.selectedSnapshotId}`, customer.healthStatus);
+          await axios.patch(`${API_URL}/customers/${customer.id}/health?snapshotId=${this.selectedSnapshotId}`, customer.healthStatus);
         });
         
         await Promise.all(promises);
@@ -516,7 +518,7 @@ export default {
     },
     async pushToSlack(customerId) {
       try {
-        await api.post(`/customers/${customerId}/push-to-slack?snapshotId=${this.selectedSnapshotId}`);
+        await axios.post(`${API_URL}/customers/${customerId}/push-to-slack?snapshotId=${this.selectedSnapshotId}`);
         alert('Customer pushed to Slack successfully!');
       } catch (error) {
         console.error('Error pushing to Slack:', error);
@@ -528,7 +530,7 @@ export default {
       
       try {
         const promises = this.selectedCustomers.map(customerId => 
-          api.post(`/customers/${customerId}/push-to-slack?snapshotId=${this.selectedSnapshotId}`)
+          axios.post(`${API_URL}/customers/${customerId}/push-to-slack?snapshotId=${this.selectedSnapshotId}`)
         );
         
         await Promise.all(promises);
@@ -540,7 +542,7 @@ export default {
     },
     async addCustomer() {
       try {
-        await api.post('/customers', this.newCustomer);
+        await axios.post(`${API_URL}/customers`, this.newCustomer);
         this.showAddCustomerModal = false;
         this.newCustomer = {
           name: '',
@@ -570,7 +572,7 @@ export default {
       if (!this.customerToDelete) return;
       
       try {
-        await api.delete(`/customers/${this.customerToDelete.id}`);
+        await axios.delete(`${API_URL}/customers/${this.customerToDelete.id}`);
         this.showDeleteModal = false;
         this.customerToDelete = null;
         this.fetchCustomers();
@@ -581,7 +583,7 @@ export default {
     },
     async updateHealthStatus(customer) {
       try {
-        await api.patch(`/customers/${customer.id}/health?snapshotId=${this.selectedSnapshotId}`, customer.healthStatus);
+        await axios.patch(`${API_URL}/customers/${customer.id}/health?snapshotId=${this.selectedSnapshotId}`, customer.healthStatus);
         alert('Health status updated successfully!');
       } catch (error) {
         console.error('Error updating health status:', error);
@@ -607,7 +609,7 @@ export default {
           customField4: customer.customField4
         };
         
-        await api.patch(`/customers/${customer.id}`, customerData);
+        await axios.patch(`${API_URL}/customers/${customer.id}`, customerData);
         return true;
       } catch (error) {
         console.error('Error updating customer data:', error);
@@ -623,7 +625,7 @@ export default {
       // Then save health status (snapshot-specific data)
       try {
         if (customerDataSaved) {
-          await api.patch(`/customers/${customer.id}/health?snapshotId=${this.selectedSnapshotId}`, customer.healthStatus);
+          await axios.patch(`${API_URL}/customers/${customer.id}/health?snapshotId=${this.selectedSnapshotId}`, customer.healthStatus);
           alert('Customer data and health status updated successfully!');
         }
       } catch (error) {

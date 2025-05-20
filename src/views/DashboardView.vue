@@ -371,7 +371,9 @@
 <script>
 import HealthSummary from '@/components/HealthSummary.vue';
 import DashboardTable from '@/components/DashboardTable.vue';
-import api from '@/services/api';
+import axios from 'axios';
+
+import { API_URL } from '@/services/api';
 
 export default {
   name: 'DashboardView',
@@ -460,7 +462,7 @@ export default {
   methods: {
     async fetchSnapshots() {
       try {
-        const response = await api.get('/snapshots');
+        const response = await axios.get(`${API_URL}/snapshots`);
         this.snapshots = response.data;
         if (this.snapshots.length > 0) {
           this.currentSnapshotId = this.snapshots[0].id;
@@ -472,7 +474,7 @@ export default {
     },
     async fetchCsos() {
       try {
-        const response = await api.get('/dashboard/csos');
+        const response = await axios.get(`${API_URL}/dashboard/csos`);
         this.csos = response.data;
       } catch (error) {
         console.error('Error fetching CSOs:', error);
@@ -480,7 +482,7 @@ export default {
     },
     async fetchCustomerTypes() {
       try {
-        const response = await api.get('/dashboard/customer-types');
+        const response = await axios.get(`${API_URL}/dashboard/customer-types`);
         this.customerTypes = response.data;
       } catch (error) {
         console.error('Error fetching customer types:', error);
@@ -496,11 +498,11 @@ export default {
         if (this.selectedCso) summaryParams.append('cso', this.selectedCso);
         if (this.selectedCustomerType) summaryParams.append('customerType', this.selectedCustomerType);
         
-        const summaryResponse = await api.get(`/dashboard/health-summary?${summaryParams.toString()}`);
+        const summaryResponse = await axios.get(`${API_URL}/dashboard/health-summary?${summaryParams.toString()}`);
         this.healthSummary = summaryResponse.data;
         
         // Fetch health metrics
-        const metricsResponse = await api.get(`/dashboard/health-metrics?${summaryParams.toString()}`);
+        const metricsResponse = await axios.get(`${API_URL}/dashboard/health-metrics?${summaryParams.toString()}`);
         this.metrics = metricsResponse.data;
         
         // Fetch customers
@@ -509,7 +511,7 @@ export default {
         if (this.selectedCso) customerParams.append('cso', this.selectedCso);
         if (this.selectedCustomerType) customerParams.append('customerType', this.selectedCustomerType);
         
-        const customerResponse = await api.get(`/customers?${customerParams.toString()}`);
+        const customerResponse = await axios.get(`${API_URL}/customers?${customerParams.toString()}`);
         this.customers = customerResponse.data;
         
         // If comparison is selected, fetch previous data
@@ -519,11 +521,11 @@ export default {
           if (this.selectedCso) comparisonParams.append('cso', this.selectedCso);
           if (this.selectedCustomerType) comparisonParams.append('customerType', this.selectedCustomerType);
           
-          const comparisonResponse = await api.get(`/customers?${comparisonParams.toString()}`);
+          const comparisonResponse = await axios.get(`${API_URL}/customers?${comparisonParams.toString()}`);
           const previousCustomers = comparisonResponse.data;
           
           // Fetch comparison metrics
-          const comparisonMetricsResponse = await api.get(`/dashboard/health-metrics?${comparisonParams.toString()}`);
+          const comparisonMetricsResponse = await axios.get(`${API_URL}/dashboard/health-metrics?${comparisonParams.toString()}`);
           this.comparisonMetrics = comparisonMetricsResponse.data;
           
           // Calculate status movement
