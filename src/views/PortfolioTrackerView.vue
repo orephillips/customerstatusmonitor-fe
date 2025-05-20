@@ -356,7 +356,7 @@
 </template>
 
 <script>
-import api, { API_URL } from '@/services/api';
+import api from '@/services/api';
 
 export default {
   name: 'PortfolioTrackerView',
@@ -528,7 +528,7 @@ export default {
       
       try {
         const promises = this.selectedCustomers.map(customerId => 
-          axios.post(`${API_URL}/customers/${customerId}/push-to-slack?snapshotId=${this.selectedSnapshotId}`)
+          api.post(`/customers/${customerId}/push-to-slack?snapshotId=${this.selectedSnapshotId}`)
         );
         
         await Promise.all(promises);

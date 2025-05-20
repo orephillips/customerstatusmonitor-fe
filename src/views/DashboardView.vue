@@ -371,7 +371,7 @@
 <script>
 import HealthSummary from '@/components/HealthSummary.vue';
 import DashboardTable from '@/components/DashboardTable.vue';
-import api, { API_URL } from '@/services/api';
+import api from '@/services/api';
 
 export default {
   name: 'DashboardView',
