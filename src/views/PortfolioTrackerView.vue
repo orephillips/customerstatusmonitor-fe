@@ -542,7 +542,7 @@ export default {
     },
     async addCustomer() {
       try {
-        await axios.post(`${API_URL}/customers`, this.newCustomer);
+        await axios.post(`${API_URL}/customers/`, this.newCustomer);
         this.showAddCustomerModal = false;
         this.newCustomer = {
           name: '',
