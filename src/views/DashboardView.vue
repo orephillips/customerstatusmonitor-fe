@@ -474,7 +474,7 @@ export default {
     },
     async fetchCsos() {
       try {
-        const response = await axios.get(`${API_URL}/dashboard/csos/`);
+        const response = await axios.get(`${API_URL}/dashboard/csos`);
         this.csos = response.data;
       } catch (error) {
         console.error('Error fetching CSOs:', error);
@@ -482,7 +482,7 @@ export default {
     },
     async fetchCustomerTypes() {
       try {
-        const response = await axios.get(`${API_URL}/dashboard/customer-types/`);
+        const response = await axios.get(`${API_URL}/dashboard/customer-types`);
         this.customerTypes = response.data;
       } catch (error) {
         console.error('Error fetching customer types:', error);

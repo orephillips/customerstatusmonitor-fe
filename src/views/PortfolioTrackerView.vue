@@ -424,7 +424,7 @@ export default {
     },
     async fetchCsos() {
       try {
-        const response = await axios.get(`${API_URL}/dashboard/csos/`);
+        const response = await axios.get(`${API_URL}/dashboard/csos`);
         this.csos = response.data;
       } catch (error) {
         console.error('Error fetching CSOs:', error);
@@ -432,7 +432,7 @@ export default {
     },
     async fetchCustomerTypes() {
       try {
-        const response = await axios.get(`${API_URL}/dashboard/customer-types/`);
+        const response = await axios.get(`${API_URL}/dashboard/customer-types`);
         this.customerTypes = response.data;
       } catch (error) {
         console.error('Error fetching customer types:', error);
@@ -518,7 +518,7 @@ export default {
     },
     async pushToSlack(customerId) {
       try {
-        await axios.post(`${API_URL}/customers/${customerId}/push-to-slack/?snapshotId=${this.selectedSnapshotId}`);
+        await axios.post(`${API_URL}/customers/${customerId}/push-to-slack?snapshotId=${this.selectedSnapshotId}`);
         alert('Customer pushed to Slack successfully!');
       } catch (error) {
         console.error('Error pushing to Slack:', error);
@@ -530,7 +530,7 @@ export default {
       
       try {
         const promises = this.selectedCustomers.map(customerId => 
-          axios.post(`${API_URL}/customers/${customerId}/push-to-slack/?snapshotId=${this.selectedSnapshotId}`)
+          axios.post(`${API_URL}/customers/${customerId}/push-to-slack?snapshotId=${this.selectedSnapshotId}`)
         );
         
         await Promise.all(promises);
