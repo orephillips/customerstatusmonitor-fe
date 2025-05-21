@@ -86,7 +86,7 @@
                   type="text" 
                   v-model="customer.name"
                   placeholder="Customer Name"
-                  class="standard-input"
+                  class="standard-input customer-name-input"
                 />
               </td>
               <td>
@@ -881,6 +881,12 @@ export default {
   padding: 0.375rem 0.75rem;
   border: 1px solid #ced4da;
   border-radius: 0.25rem;
+}
+
+.customer-name-input {
+  background-color: #e6f7ff; /* Light blue background */
+  font-weight: bold; /* Bold font */
+  font-size: calc(1em + 1.5pt); /* Increase font size by 1.5pts */
 }
 
 .button-container {
