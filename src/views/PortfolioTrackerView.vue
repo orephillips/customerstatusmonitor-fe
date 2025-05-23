@@ -29,6 +29,18 @@
             class="form-check-input"
           >
         </div>
+        
+        <div class="filter-item search-filter">
+          <label for="customer-search" class="form-label">Search Customers</label>
+          <input
+            id="customer-search"
+            v-model="searchQuery"
+            type="text"
+            class="form-control"
+            placeholder="Search by name, ID, CSO..."
+            @input="applyFilters"
+          >
+        </div>
 
       </div>
     </div>
@@ -383,6 +395,7 @@ export default {
       selectedSnapshotId: '',
       selectedCso: '',
       showCustomFields: false,
+      searchQuery: '',
       selectedCustomers: [],
       selectAll: false,
       showAddCustomerModal: false,
@@ -447,7 +460,19 @@ export default {
         if (this.selectedCso) params.append('cso', this.selectedCso);
         
         const response = await axios.get(`${API_URL}/customers/?${params.toString()}`);
-        this.customers = response.data;
+        let customersData = response.data;
+        
+        // Apply search filter locally if search query exists
+        if (this.searchQuery) {
+          const query = this.searchQuery.toLowerCase();
+          customersData = customersData.filter(customer => 
+            customer.name.toLowerCase().includes(query) || 
+            customer.customerId.toLowerCase().includes(query) || 
+            customer.cso.toLowerCase().includes(query)
+          );
+        }
+        
+        this.customers = customersData;
         this.selectedCustomers = [];
         this.selectAll = false;
       } catch (error) {
@@ -664,6 +689,11 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+}
+
+.search-filter {
+  flex: 1;
+  min-width: 250px;
 }
 
 .filter-item label {
